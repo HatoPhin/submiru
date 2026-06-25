@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d9488" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>サブみる</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+/* ===== Light ===== */
+:root{
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --card2:#f1f5f9;
+  --border:#e2e8f0;
+  --border2:#f1f5f9;
+  --text:#0f172a;
+  --text2:#64748b;
+  --text3:#94a3b8;
+  --primary:#0d9488;
+  --primary-dim:#14b8a6;
+  --primary-light:#f0fdfa;
+  --primary-text:#0f766e;
+  --red:#ef4444;
+  --red-light:#fef2f2;
+  --amber:#f59e0b;
+  --amber-light:#fffbeb;
+  --green:#22c55e;
+  --green-light:#f0fdf4;
+  --hero-bg:#111827;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --nav-bg:#ffffff;
+  --nav-border:#e8ecf0;
+}
+/* ===== Dark ===== */
+[data-theme="dark"]{
+  --bg:#0d1117;
+  --card:#161b22;
+  --card2:#1c2128;
+  --border:#30363d;
+  --border2:#21262d;
+  --text:#e6edf3;
+  --text2:#9198a1;
+  --text3:#6e7681;
+  --primary:#2dd4bf;
+  --primary-dim:#5eead4;
+  --primary-light:#0f2b27;
+  --primary-text:#5eead4;
+  --red:#f85149;
+  --red-light:#2d1214;
+  --amber:#e3b341;
+  --amber-light:#2b2210;
+  --green:#3fb950;
+  --green-light:#0f2b1c;
+  --hero-bg:#000000;
+  --shadow:0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4);
+  --nav-bg:#161b22;
+  --nav-border:#30363d;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;
+  margin:0;padding-bottom:78px;-webkit-tap-highlight-color:transparent;
+  transition:background .2s,color .2s;
+}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);}
+.noscroll::-webkit-scrollbar{display:none;}
+.noscroll{scrollbar-width:none;}
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:opacity .15s,transform .1s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-ghost{background:var(--card2);color:var(--text2);}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:6px 13px;border-radius:99px;font-size:11.5px;font-weight:700;border:1px solid var(--border);background:var(--card);color:var(--text2);white-space:nowrap;cursor:pointer;transition:all .15s;}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+input,select{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;}
+input:focus,select:focus{outline:2px solid var(--primary);outline-offset:-1px;}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.tab-view{display:none;}
+.tab-view.active{display:block;}
+.tab-b{color:var(--text3);}
+.tab-b.active{color:var(--primary);}
+.avatar{width:38px;height:38px;border-radius:11px;flex-shrink:0;object-fit:cover;background:var(--card2);}
+.avatar-fallback{width:38px;height:38px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;width:min(440px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px);}to{opacity:1;transform:translate(-50%,0);}}
+.swipe-card{position:relative;width:100%;touch-action:none;user-select:none;}
+</style>
+</head>
+<body>
+
+<!-- ==================== ヘッダー ==================== -->
+<header style="position:sticky;top:0;z-index:100;background:var(--bg);padding:14px 16px 8px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div style="width:30px;height:30px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;">
+      <i data-lucide="repeat" style="width:17px;height:17px;color:#fff;"></i>
+    </div>
+    <span style="font-size:17px;font-weight:800;letter-spacing:-.3px;">サブみる</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <!-- Drive連携（未ログイン） -->
+    <button id="btn-gdrive-login" class="btn btn-ghost" style="font-size:10px;gap:4px;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M4.433 22.396l2.237-3.873H22.01l-2.238 3.873zm3.982-6.89L6.178 12.25 12.005 2l2.237 3.873zm13.585 3.017H17.35l-5.826-10.09 2.237-3.873z"/></svg>
+      Drive
+    </button>
+    <!-- Drive連携（ログイン済み） -->
+    <div id="gdrive-status" style="display:none;align-items:center;gap:4px;">
+      <div style="display:flex;align-items:center;gap:3px;background:var(--green-light);border:1px solid var(--border);border-radius:8px;padding:3px 8px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0;"></span>
+        <span id="gdrive-user-name" style="font-size:10px;font-weight:600;color:var(--green);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">連携中</span>
+      </div>
+      <button id="btn-gdrive-sync" class="btn btn-ghost" style="font-size:10px;padding:4px 8px;">同期</button>
+      <button id="btn-gdrive-logout" class="btn btn-ghost" style="font-size:10px;padding:4px 8px;">切断</button>
+    </div>
+    <button id="btn-theme-toggle" style="background:var(--card2);border:1px solid var(--border);border-radius:99px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <i data-lucide="moon" id="theme-icon" style="width:16px;height:16px;color:var(--text2);"></i>
+    </button>
+  </div>
+</header>
+
+<main style="padding:4px 16px 16px;max-width:560px;margin:0 auto;">
+
+  <!-- ============================================================ ホームタブ ============================================================ -->
+  <section id="tab-home" class="tab-view active">
+
+    <!-- ヒーローカード -->
+    <div style="background:linear-gradient(160deg,var(--hero-bg) 0%,color-mix(in srgb,var(--hero-bg) 80%,var(--primary)) 130%);border-radius:18px;padding:22px 22px 20px;color:#fff;position:relative;overflow:hidden;margin-top:10px;">
+      <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+      <div style="font-size:11px;color:var(--primary-dim);font-weight:700;letter-spacing:.05em;">今月のサブスク合計支払い</div>
+      <div id="ui-home-monthly" style="font-size:34px;font-weight:800;margin-top:6px;letter-spacing:-1px;font-family:monospace;">¥0</div>
+      <div style="display:flex;gap:24px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);">
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.5);">年間費</div>
+          <div id="ui-home-yearly" style="font-size:14px;font-weight:700;margin-top:2px;font-family:monospace;">¥0</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.5);">契約数</div>
+          <div id="ui-home-count" style="font-size:14px;font-weight:700;margin-top:2px;font-family:monospace;">0件</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ソートチップ -->
+    <div style="display:flex;gap:6px;overflow-x:auto;margin-top:16px;" class="noscroll">
+      <button class="chip active" data-sort="suggested" onclick="setSort('suggested')">提案順</button>
+      <button class="chip" data-sort="high" onclick="setSort('high')">高い順</button>
+      <button class="chip" data-sort="low" onclick="setSort('low')">安い順</button>
+      <button class="chip" data-sort="custom" onclick="setSort('custom')">カスタム</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 8px;">
+      <span style="font-size:12px;font-weight:700;color:var(--text2);">契約中のサービス</span>
+      <span id="ui-reorder-hint" style="display:none;font-size:10px;color:var(--text3);">▲▼で並べ替え</span>
+    </div>
+
+    <div id="sub-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+    <div id="sub-list-empty" style="display:none;text-align:center;padding:40px 0;color:var(--text3);font-size:12px;">
+      まだサブスクが登録されていません。<br>右下の＋から追加できます。
+    </div>
+
+  </section>
+
+  <!-- ============================================================ カレンダータブ ============================================================ -->
+  <section id="tab-calendar" class="tab-view">
+    <div class="card p-4" style="margin-top:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <button onclick="changeCalMonth(-1)" style="background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
+        <span id="cal-month-label" style="font-size:15px;font-weight:700;">2026年4月</span>
+        <button onclick="changeCalMonth(1)" style="background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">
+        <div style="color:var(--red);">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div style="color:var(--primary-text);">土</div>
+      </div>
+      <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+    </div>
+
+    <div class="card p-4" style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text2);">今月の合計</span>
+        <span id="cal-month-total" style="font-size:16px;font-weight:800;font-family:monospace;color:var(--text);">¥0</span>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 6px;">今月の支払い予定</div>
+      <div id="cal-payment-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div id="cal-payment-empty" style="display:none;text-align:center;padding:20px 0;color:var(--text3);font-size:12px;">今月の支払いはありません</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 分析タブ ============================================================ -->
+  <section id="tab-analysis" class="tab-view">
+
+    <div class="card p-4" style="margin-top:10px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">コストが高いサブスク</div>
+      <div id="rank-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,var(--hero-bg) 0%,color-mix(in srgb,var(--hero-bg) 75%,var(--primary)) 140%);border-radius:16px;padding:18px 20px;color:#fff;margin-top:12px;">
+      <div style="font-size:11px;color:var(--primary-dim);font-weight:700;">診断で見つかった節約額</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;">
+        <span style="font-size:11px;color:rgba(255,255,255,.6);">月</span>
+        <span id="ui-savings-monthly" style="font-size:26px;font-weight:800;font-family:monospace;letter-spacing:-.5px;">¥0</span>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;">年間 <span id="ui-savings-yearly">¥0</span> の節約</div>
+    </div>
+
+    <div class="card p-4" style="margin-top:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">支出の推移</div>
+      <div style="height:160px;"><canvas id="chart-trend"></canvas></div>
+    </div>
+
+    <div class="card p-4" style="margin-top:12px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">カテゴリ別の内訳</div>
+      <div style="height:200px;display:flex;align-items:center;justify-content:center;"><canvas id="chart-category"></canvas></div>
+      <div id="cat-legend" style="display:flex;flex-direction:column;gap:6px;margin-top:12px;"></div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================ 診断タブ ============================================================ -->
+  <section id="tab-diagnosis" class="tab-view">
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text2);">サブスク診断</span>
+        <span id="diag-progress-text" style="font-size:11px;font-weight:700;color:var(--text3);">0/0</span>
+      </div>
+      <div style="width:100%;background:var(--card2);border-radius:99px;height:5px;overflow:hidden;">
+        <div id="diag-progress-bar" style="height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width .3s;"></div>
+      </div>
+    </div>
+
+    <div id="diag-stage" style="margin-top:18px;"></div>
+
+    <div id="diag-empty" style="display:none;text-align:center;padding:60px 0;color:var(--text3);font-size:12px;">
+      診断できるサブスクがありません。<br>まずはホームから登録してください。
+    </div>
+
+    <div id="diag-summary" style="display:none;margin-top:14px;"></div>
+  </section>
+
+  <!-- ============================================================ 設定タブ ============================================================ -->
+  <section id="tab-settings" class="tab-view">
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:12px;">
+
+      <div class="card p-4">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">データ管理</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="exportData()" class="btn btn-ghost" style="justify-content:center;">
+            <i data-lucide="download" style="width:14px;height:14px;"></i> データをエクスポート
+          </button>
+          <label class="btn btn-ghost" style="justify-content:center;cursor:pointer;">
+            <i data-lucide="upload" style="width:14px;height:14px;"></i> データをインポート
+            <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+          </label>
+          <button onclick="confirmResetAll()" class="btn" style="justify-content:center;background:var(--red-light);color:var(--red);">
+            <i data-lucide="trash-2" style="width:14px;height:14px;"></i> 全データを削除
+          </button>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">Finbooから取り込む</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-bottom:10px;line-height:1.6;">Finbooで「サブスクリプション」カテゴリに記録された決済の中から、複数月にわたって繰り返し発生しているものを自動で検出します。</div>
+        <button onclick="openFinbooImportModal()" class="btn btn-ghost" style="justify-content:center;width:100%;">
+          <i data-lucide="search" style="width:14px;height:14px;"></i> 候補を確認する
+        </button>
+      </div>
+
+      <div class="card p-4">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;">カテゴリ</div>
+        <div id="settings-cat-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+
+      <div style="text-align:center;font-size:10px;color:var(--text3);padding:10px 0;">サブみる ・ ブラウザ内にのみデータを保存します</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ＋ボタン（ホームタブのみ表示） -->
+<button id="btn-fab-add" onclick="openSubModal()" style="display:none;position:fixed;right:18px;bottom:86px;width:54px;height:54px;border-radius:50%;background:var(--primary);color:#fff;border:none;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;align-items:center;justify-content:center;z-index:500;">
+  <i data-lucide="plus" style="width:24px;height:24px;"></i>
+</button>
+
+<!-- ==================== ボトムナビ ==================== -->
+<nav style="position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--nav-border);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:1000;">
+  <button class="tab-b active" data-tab="home" onclick="switchTab('home')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;min-width:56px;padding:0 8px;">
+    <i data-lucide="home" style="width:20px;height:20px;"></i>
+    <span style="font-size:9px;">ホーム</span>
+  </button>
+  <button class="tab-b" data-tab="calendar" onclick="switchTab('calendar')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;min-width:56px;padding:0 8px;">
+    <i data-lucide="calendar" style="width:20px;height:20px;"></i>
+    <span style="font-size:9px;">カレンダー</span>
+  </button>
+  <button class="tab-b" data-tab="analysis" onclick="switchTab('analysis')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;min-width:56px;padding:0 8px;">
+    <i data-lucide="bar-chart-2" style="width:20px;height:20px;"></i>
+    <span style="font-size:9px;">分析</span>
+  </button>
+  <button class="tab-b" data-tab="diagnosis" onclick="switchTab('diagnosis')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;min-width:56px;padding:0 8px;">
+    <i data-lucide="stethoscope" style="width:20px;height:20px;"></i>
+    <span style="font-size:9px;">診断</span>
+  </button>
+  <button class="tab-b" data-tab="settings" onclick="switchTab('settings')" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;min-width:56px;padding:0 8px;">
+    <i data-lucide="settings" style="width:20px;height:20px;"></i>
+    <span style="font-size:9px;">設定</span>
+  </button>
+</nav>
+
+<!-- ==================== サブスク追加/編集モーダル ==================== -->
+<div id="sub-modal-overlay" class="modal-overlay">
+  <div class="modal-box">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:1;">
+      <div id="sub-modal-title" style="font-size:15px;font-weight:700;">サブスクを追加</div>
+      <button onclick="hideModal('sub-modal-overlay')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+    </div>
+    <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;">
+
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="sub-logo-preview" style="width:54px;height:54px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <i data-lucide="image" style="width:20px;height:20px;color:var(--text3);"></i>
+        </div>
+        <label class="btn btn-ghost" style="font-size:11px;cursor:pointer;">
+          <i data-lucide="upload" style="width:13px;height:13px;"></i> ロゴ画像を選ぶ
+          <input id="sub-logo-input" type="file" accept="image/*" onchange="onLogoSelected(event)" style="display:none;">
+        </label>
+        <button id="sub-logo-clear" onclick="clearLogo()" style="display:none;font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;">削除</button>
+      </div>
+
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">サービス名</label>
+        <input id="sub-name" type="text" placeholder="例: Netflix" style="width:100%;padding:9px 12px;font-size:13px;">
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">料金</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:13px;color:var(--text3);">¥</span>
+            <input id="sub-price" type="number" min="0" step="10" style="flex:1;padding:9px 12px;font-size:13px;">
+          </div>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">周期</label>
+          <select id="sub-cycle" onchange="onCycleChange()" style="width:100%;padding:9px 12px;font-size:13px;">
+            <option value="monthly">月額</option>
+            <option value="yearly">年額</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <div id="sub-month-wrap" style="display:none;flex:1;">
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">支払い月</label>
+          <select id="sub-billing-month" style="width:100%;padding:9px 12px;font-size:13px;"></select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">支払い日</label>
+          <select id="sub-billing-day" style="width:100%;padding:9px 12px;font-size:13px;"></select>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">カテゴリ</label>
+        <select id="sub-category" style="width:100%;padding:9px 12px;font-size:13px;"></select>
+      </div>
+
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">決済方法（Finbooと連携する場合に使用）</label>
+        <input id="sub-payment-method" type="text" list="payment-method-list" placeholder="例: 楽天カード" style="width:100%;padding:9px 12px;font-size:13px;">
+        <datalist id="payment-method-list"></datalist>
+      </div>
+
+      <div>
+        <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">利用開始日（任意・支出推移の計算に使用）</label>
+        <input id="sub-start-date" type="date" style="width:100%;padding:9px 12px;font-size:13px;">
+      </div>
+
+      <div style="display:flex;gap:8px;padding-top:6px;border-top:1px solid var(--border);">
+        <button onclick="saveSubModal()" class="btn btn-primary" style="flex:1;justify-content:center;">保存する</button>
+        <button id="sub-delete-btn" onclick="deleteSubFromModal()" style="display:none;background:var(--red-light);color:var(--red);" class="btn">削除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 確認モーダル（汎用） ==================== -->
+<div id="confirm-modal-overlay" class="modal-overlay">
+  <div class="modal-box" style="width:min(340px,100%);">
+    <div style="padding:22px;">
+      <div id="confirm-modal-text" style="font-size:13px;color:var(--text);line-height:1.6;text-align:center;margin-bottom:18px;">本当に削除しますか？</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="hideModal('confirm-modal-overlay')" class="btn btn-ghost" style="flex:1;justify-content:center;">キャンセル</button>
+        <button id="confirm-modal-ok" class="btn" style="flex:1;justify-content:center;background:var(--red);color:#fff;">削除する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Finboo取り込みモーダル ==================== -->
+<div id="finboo-import-overlay" class="modal-overlay">
+  <div class="modal-box">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:1;">
+      <div style="font-size:15px;font-weight:700;">Finbooから取り込む</div>
+      <button onclick="hideModal('finboo-import-overlay')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);">×</button>
+    </div>
+    <div style="padding:18px 22px;">
+      <div id="finboo-import-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <div id="finboo-import-empty" style="display:none;text-align:center;padding:30px 0;color:var(--text3);font-size:12px;line-height:1.7;">
+        繰り返し検出されたサブスクは見つかりませんでした。<br>Finbooで「サブスクリプション」カテゴリの決済が2ヶ月以上記録されると、ここに候補が表示されます。
+      </div>
+      <button id="finboo-import-submit" onclick="importSelectedFinbooSubs()" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;">選択した項目を追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- トースト -->
+<div id="toast" style="position:fixed;bottom:78px;left:50%;color:#fff;font-size:11px;padding:8px 18px;border-radius:99px;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:9998;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;background:#1e293b;">
+  <span id="toast-msg">メッセージ</span>
+</div>
+
+<script>
+// ============================================================
+// 定数
+// ============================================================
+const SUB_CATS=["動画・エンタメ","音楽","AI・ツール","クラウド・ストレージ","ニュース・読書","ゲーム","フィットネス","その他"];
+const SUB_CAT_COLORS={
+  "動画・エンタメ":"#f97316","音楽":"#ec4899","AI・ツール":"#8b5cf6","クラウド・ストレージ":"#3b82f6",
+  "ニュース・読書":"#14b8a6","ゲーム":"#6366f1","フィットネス":"#22c55e","その他":"#94a3b8"
+};
+const AVATAR_PALETTE=["#0d9488","#3b82f6","#8b5cf6","#ec4899","#f97316","#22c55e","#6366f1","#f59e0b"];
+
+const STORAGE_KEY='subscan_data';
+
+// ============================================================
+// Finboo連携（同一オリジンでホスティングされている場合、決済方法の候補を取得）
+// ============================================================
+const FALLBACK_PAYMENT_METHODS=["三井住友カード(Olive)","PayPayクレジット","PayPay残高","楽天カード","EPOSカード","V Point Pay","現金"];
+function getFinbooPaymentMethods(){
+  const names=new Set(FALLBACK_PAYMENT_METHODS);
+  try{
+    const raw=localStorage.getItem('finboo_settings');
+    if(raw){
+      const cfg=JSON.parse(raw);
+      Object.keys(cfg.methodColors||{}).forEach(n=>names.add(n));
+      Object.keys(cfg.methodBrands||{}).forEach(n=>names.add(n));
+    }
+  }catch(e){ /* Finbooのデータが無い・別オリジンの場合はフォールバックのみ使用 */ }
+  return [...names].filter(n=>n&&!n.includes('ポイント払い')&&n!=='収入').sort();
+}
+
+// ============================================================
+// Finbooの取引履歴から、繰り返し発生している「サブスクリプション」
+// カテゴリの決済を検出する
+// ============================================================
+let finbooImportCandidates=[];
+
+function detectFinbooSubscriptionCandidates(){
+  const txs=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    const m=key&&key.match(/^finboo_tx_(\d{4})_(\d{2})$/);
+    if(!m) continue;
+    try{
+      const arr=JSON.parse(localStorage.getItem(key))||[];
+      arr.forEach(t=>{
+        if((t.categoryMajor||'')==='サブスクリプション'&&t.type!=='income'&&t.shop&&t.amount>0){
+          txs.push(Object.assign({},t,{_y:parseInt(m[1]),_m:parseInt(m[2])}));
+        }
+      });
+    }catch(e){}
+  }
+
+  const groups={};
+  txs.forEach(t=>{
+    const shop=t.shop.trim();
+    const methodNorm=(t.method||'その他').replace('（ポイント払い）','');
+    const key=shop.toLowerCase()+'|'+methodNorm;
+    groups[key]=groups[key]||{shop,method:methodNorm,entries:[]};
+    groups[key].entries.push(t);
+  });
+
+  const candidates=[];
+  Object.values(groups).forEach(g=>{
+    const distinctMonths=new Set(g.entries.map(e=>`${e._y}-${e._m}`));
+    if(distinctMonths.size<2) return; // 1ヶ月だけの記録は対象外
+
+    // 最も多く登場した金額を採用
+    const amtCount={};
+    g.entries.forEach(e=>{ amtCount[e.amount]=(amtCount[e.amount]||0)+1; });
+    const amount=parseInt(Object.entries(amtCount).sort((a,b)=>b[1]-a[1])[0][0]);
+
+    // 直近の取引から支払日を推定
+    const sorted=[...g.entries].sort((a,b)=>(b._y*100+b._m)-(a._y*100+a._m)||((b.date||'')<(a.date||'')?-1:1));
+    const latest=sorted[0];
+    const dayMatch=(latest.date||'').match(/\/(\d{1,2})$/);
+    const billingDay=dayMatch?parseInt(dayMatch[1]):1;
+
+    // 最も古い記録の月を利用開始日の目安にする
+    const oldest=[...g.entries].sort((a,b)=>(a._y*100+a._m)-(b._y*100+b._m))[0];
+    const startDate=`${oldest._y}-${String(oldest._m).padStart(2,'0')}-01`;
+
+    candidates.push({
+      shop:g.shop, method:g.method, amount, billingDay, startDate,
+      monthsDetected:distinctMonths.size
+    });
+  });
+
+  const existingNames=new Set(S.subs.map(s=>(s.name||'').trim().toLowerCase()));
+  return candidates
+    .filter(c=>!existingNames.has(c.shop.toLowerCase()))
+    .sort((a,b)=>b.monthsDetected-a.monthsDetected);
+}
+
+function openFinbooImportModal(){
+  finbooImportCandidates=detectFinbooSubscriptionCandidates();
+  const list=$('finboo-import-list');
+  const empty=$('finboo-import-empty');
+  const submitBtn=$('finboo-import-submit');
+  list.innerHTML='';
+  empty.style.display = finbooImportCandidates.length===0 ? 'block' : 'none';
+  submitBtn.style.display = finbooImportCandidates.length===0 ? 'none' : 'flex';
+
+  finbooImportCandidates.forEach((c,idx)=>{
+    const row=document.createElement('label');
+    row.className='card';
+    row.style.cssText='padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;';
+    row.innerHTML=`
+      <input type="checkbox" data-idx="${idx}" checked style="width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:var(--primary);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.shop)}</div>
+        <div style="font-size:9.5px;color:var(--text3);margin-top:1px;">${escapeHtml(c.method)} ・ 毎月${c.billingDay}日 ・ ${c.monthsDetected}ヶ月分検出</div>
+      </div>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:var(--text);flex-shrink:0;">${yen(c.amount)}</span>
+    `;
+    list.appendChild(row);
+  });
+
+  showModal('finboo-import-overlay');
+}
+
+function importSelectedFinbooSubs(){
+  const checks=document.querySelectorAll('#finboo-import-list input[data-idx]:checked');
+  if(checks.length===0){ toast('追加する項目を選んでください','error'); return; }
+  let added=0;
+  checks.forEach(c=>{
+    const candidate=finbooImportCandidates[parseInt(c.getAttribute('data-idx'))];
+    if(!candidate) return;
+    S.subs.push({
+      id:uid(),
+      name:candidate.shop,
+      price:candidate.amount,
+      cycle:'monthly',
+      billingDay:candidate.billingDay,
+      billingMonth:null,
+      category:SUB_CATS[SUB_CATS.length-1],
+      paymentMethod:candidate.method,
+      startDate:candidate.startDate,
+      logo:'',
+      diagnosis:null,
+      diagnosisDate:null
+    });
+    added++;
+  });
+  saveState();
+  hideModal('finboo-import-overlay');
+  renderHome();
+  toast(`${added}件のサブスクを追加しました`,'success');
+}
+
+
+const INIT={
+  subs:[],            // {id,name,logo,price,cycle,billingDay,billingMonth,category,startDate,diagnosis,diagnosisDate}
+  customOrder:[],      // カスタム並び替え用のid配列
+  sortMode:'suggested',
+  calYear:2026, calMonth:6,
+  darkMode:false,
+  monthlySnapshots:{}  // 'YYYY-MM' -> 月額換算合計（実績ログ。古い月は起算日から推定）
+};
+
+let S=loadState();
+let editingSubId=null;
+let diagQueue=[];
+let diagIndex=0;
+let diagResults=[];
+let trendChart=null, catChart=null;
+
+// ============================================================
+// 状態の保存・読み込み
+// ============================================================
+function loadState(){
+  try{
+    const d=localStorage.getItem(STORAGE_KEY);
+    if(d){
+      const parsed=JSON.parse(d);
+      return Object.assign(JSON.parse(JSON.stringify(INIT)),parsed);
+    }
+  }catch(e){console.warn('load error',e);}
+  return JSON.parse(JSON.stringify(INIT));
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(S));
+  }catch(e){console.warn('save error',e);}
+  if(gdriveToken){
+    clearTimeout(saveState._driveTimer);
+    saveState._driveTimer=setTimeout(()=>gdriveUpload(),3000);
+  }
+}
+
+// ============================================================
+// 共通ユーティリティ
+// ============================================================
+function $(id){return document.getElementById(id);}
+function uid(){return 'sub_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function yen(n){return '¥'+Math.round(n).toLocaleString();}
+function todayStr(){const d=new Date();return d.toISOString().slice(0,10);}
+
+function monthlyEquivalent(sub){
+  return sub.cycle==='yearly' ? sub.price/12 : sub.price;
+}
+function yearlyEquivalent(sub){
+  return sub.cycle==='yearly' ? sub.price : sub.price*12;
+}
+
+function toast(msg,type){
+  const t=$('toast');
+  $('toast-msg').textContent=msg;
+  t.style.background = type==='error' ? 'var(--red)' : (type==='success' ? 'var(--primary)' : '#1e293b');
+  t.style.opacity='1';
+  clearTimeout(toast._timer);
+  toast._timer=setTimeout(()=>{t.style.opacity='0';},2200);
+}
+
+function showModal(id){$(id).style.display='flex';}
+function hideModal(id){$(id).style.display='none';}
+
+function getCatColor(cat){return SUB_CAT_COLORS[cat]||'#94a3b8';}
+
+function avatarColorFor(name){
+  let h=0;
+  for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0;
+  return AVATAR_PALETTE[h%AVATAR_PALETTE.length];
+}
+
+function renderAvatarHtml(sub,size){
+  size=size||38;
+  if(sub.logo){
+    return `<img class="avatar" src="${sub.logo}" style="width:${size}px;height:${size}px;" alt="${escapeHtml(sub.name)}">`;
+  }
+  const initial=(sub.name||'?').trim().charAt(0).toUpperCase()||'?';
+  const color=avatarColorFor(sub.name||'?');
+  return `<div class="avatar-fallback" style="width:${size}px;height:${size}px;background:${color};font-size:${Math.round(size*0.42)}px;">${escapeHtml(initial)}</div>`;
+}
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============================================================
+// タブ切り替え
+// ============================================================
+function switchTab(tab){
+  document.querySelectorAll('.tab-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-b').forEach(el=>el.classList.remove('active'));
+  $('tab-'+tab).classList.add('active');
+  document.querySelector(`.tab-b[data-tab="${tab}"]`).classList.add('active');
+  $('btn-fab-add').style.display = tab==='home' ? 'flex' : 'none';
+
+  if(tab==='calendar') renderCalendar();
+  if(tab==='analysis') renderAnalysis();
+  if(tab==='diagnosis') startDiagnosis();
+  if(tab==='settings') renderSettings();
+  if(tab==='home') renderHome();
+}
+
+// ============================================================
+// ダークモード
+// ============================================================
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', S.darkMode?'dark':'light');
+  const icon=$('theme-icon');
+  if(icon){icon.setAttribute('data-lucide', S.darkMode?'sun':'moon');refreshIcons();}
+}
+function toggleTheme(){
+  S.darkMode=!S.darkMode;
+  saveState();
+  applyTheme();
+}
+function refreshIcons(){
+  if(window.lucide) lucide.createIcons();
+}
+
+// ============================================================
+// ホームタブ
+// ============================================================
+function setSort(mode){
+  S.sortMode=mode;
+  saveState();
+  document.querySelectorAll('.chip[data-sort]').forEach(c=>c.classList.toggle('active',c.getAttribute('data-sort')===mode));
+  $('ui-reorder-hint').style.display = mode==='custom' ? 'inline' : 'none';
+  renderHome();
+}
+
+function getSortedSubs(){
+  const subs=[...S.subs];
+  if(S.sortMode==='high') return subs.sort((a,b)=>monthlyEquivalent(b)-monthlyEquivalent(a));
+  if(S.sortMode==='low')  return subs.sort((a,b)=>monthlyEquivalent(a)-monthlyEquivalent(b));
+  if(S.sortMode==='custom'){
+    const order=S.customOrder&&S.customOrder.length ? S.customOrder : subs.map(s=>s.id);
+    const byId=Object.fromEntries(subs.map(s=>[s.id,s]));
+    const ordered=order.map(id=>byId[id]).filter(Boolean);
+    subs.forEach(s=>{ if(!ordered.includes(s)) ordered.push(s); });
+    return ordered;
+  }
+  return subs; // suggested = 登録順
+}
+
+function renderHome(){
+  const subs=S.subs;
+  const monthlyTotal=subs.reduce((sum,s)=>sum+monthlyEquivalent(s),0);
+  const yearlyTotal=subs.reduce((sum,s)=>sum+yearlyEquivalent(s),0);
+  $('ui-home-monthly').textContent=yen(monthlyTotal);
+  $('ui-home-yearly').textContent=yen(yearlyTotal);
+  $('ui-home-count').textContent=`${subs.length}件`;
+
+  const list=$('sub-list');
+  const empty=$('sub-list-empty');
+  const sorted=getSortedSubs();
+  list.innerHTML='';
+  empty.style.display = sorted.length===0 ? 'block' : 'none';
+
+  sorted.forEach((sub,idx)=>{
+    const row=document.createElement('div');
+    row.className='card';
+    row.style.cssText='padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;';
+    const cycleLabel=sub.cycle==='yearly'?'/年':'/月';
+    const reorder = S.sortMode==='custom' ? `
+      <div style="display:flex;flex-direction:column;gap:2px;margin-left:4px;">
+        <button onclick="event.stopPropagation();moveCustom('${sub.id}',-1)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:0;"><i data-lucide="chevron-up" style="width:14px;height:14px;"></i></button>
+        <button onclick="event.stopPropagation();moveCustom('${sub.id}',1)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:0;"><i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>
+      </div>` : '';
+    row.innerHTML=`
+      ${renderAvatarHtml(sub,38)}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(sub.name)}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${escapeHtml(sub.category||'その他')}</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;font-family:monospace;color:var(--text);white-space:nowrap;">${yen(sub.price)}<span style="font-size:9px;color:var(--text3);font-weight:600;">${cycleLabel}</span></div>
+      ${reorder}
+    `;
+    row.addEventListener('click',()=>openSubModal(sub.id));
+    list.appendChild(row);
+  });
+  refreshIcons();
+}
+
+function moveCustom(id,dir){
+  let order=S.customOrder&&S.customOrder.length ? [...S.customOrder] : S.subs.map(s=>s.id);
+  const i=order.indexOf(id);
+  if(i<0) return;
+  const j=i+dir;
+  if(j<0||j>=order.length) return;
+  [order[i],order[j]]=[order[j],order[i]];
+  S.customOrder=order;
+  saveState();
+  renderHome();
+}
+
+// ============================================================
+// サブスク追加・編集モーダル
+// ============================================================
+function fillSelectOptions(selectEl,count,suffix){
+  selectEl.innerHTML='';
+  for(let i=1;i<=count;i++){
+    const opt=document.createElement('option');
+    opt.value=i; opt.textContent=i+(suffix||'');
+    selectEl.appendChild(opt);
+  }
+}
+
+function onCycleChange(){
+  const cycle=$('sub-cycle').value;
+  $('sub-month-wrap').style.display = cycle==='yearly' ? 'block' : 'none';
+}
+
+function openSubModal(id){
+  editingSubId=id||null;
+  const sub = id ? S.subs.find(s=>s.id===id) : null;
+
+  $('sub-modal-title').textContent = sub ? 'サブスクを編集' : 'サブスクを追加';
+  $('sub-delete-btn').style.display = sub ? 'inline-flex' : 'none';
+
+  fillSelectOptions($('sub-billing-day'),31,'日');
+  const monthSel=$('sub-billing-month');
+  monthSel.innerHTML='';
+  for(let i=1;i<=12;i++){
+    const opt=document.createElement('option');
+    opt.value=i; opt.textContent=i+'月';
+    monthSel.appendChild(opt);
+  }
+  const catSel=$('sub-category');
+  catSel.innerHTML='';
+  SUB_CATS.forEach(c=>{
+    const opt=document.createElement('option');
+    opt.value=c; opt.textContent=c;
+    catSel.appendChild(opt);
+  });
+
+  const pmList=$('payment-method-list');
+  pmList.innerHTML='';
+  getFinbooPaymentMethods().forEach(name=>{
+    const opt=document.createElement('option');
+    opt.value=name;
+    pmList.appendChild(opt);
+  });
+
+  $('sub-name').value = sub ? sub.name : '';
+  $('sub-price').value = sub ? sub.price : '';
+  $('sub-cycle').value = sub ? sub.cycle : 'monthly';
+  $('sub-billing-day').value = sub ? sub.billingDay : new Date().getDate();
+  $('sub-billing-month').value = sub ? (sub.billingMonth||1) : 1;
+  $('sub-category').value = sub ? sub.category : SUB_CATS[0];
+  $('sub-payment-method').value = sub ? (sub.paymentMethod||'') : '';
+  $('sub-start-date').value = sub ? (sub.startDate||'') : todayStr();
+  onCycleChange();
+
+  const preview=$('sub-logo-preview');
+  const clearBtn=$('sub-logo-clear');
+  if(sub&&sub.logo){
+    preview.innerHTML=`<img src="${sub.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">`;
+    clearBtn.style.display='inline';
+  }else{
+    preview.innerHTML=`<i data-lucide="image" style="width:20px;height:20px;color:var(--text3);"></i>`;
+    clearBtn.style.display='none';
+  }
+  preview.dataset.logo = (sub&&sub.logo)||'';
+
+  showModal('sub-modal-overlay');
+  refreshIcons();
+}
+
+function onLogoSelected(e){
+  const file=e.target.files&&e.target.files[0];
+  if(!file) return;
+  if(file.size>2*1024*1024){toast('画像サイズは2MB以下にしてください','error');return;}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const preview=$('sub-logo-preview');
+    preview.innerHTML=`<img src="${reader.result}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">`;
+    preview.dataset.logo=reader.result;
+    $('sub-logo-clear').style.display='inline';
+  };
+  reader.readAsDataURL(file);
+}
+function clearLogo(){
+  const preview=$('sub-logo-preview');
+  preview.innerHTML=`<i data-lucide="image" style="width:20px;height:20px;color:var(--text3);"></i>`;
+  preview.dataset.logo='';
+  $('sub-logo-clear').style.display='none';
+  $('sub-logo-input').value='';
+  refreshIcons();
+}
+
+function saveSubModal(){
+  const name=$('sub-name').value.trim();
+  const price=parseInt($('sub-price').value);
+  if(!name){toast('サービス名を入力してください','error');return;}
+  if(isNaN(price)||price<0){toast('正しい料金を入力してください','error');return;}
+
+  const cycle=$('sub-cycle').value;
+  const data={
+    name,
+    price,
+    cycle,
+    billingDay:parseInt($('sub-billing-day').value)||1,
+    billingMonth:cycle==='yearly'?(parseInt($('sub-billing-month').value)||1):null,
+    category:$('sub-category').value,
+    paymentMethod:$('sub-payment-method').value.trim(),
+    startDate:$('sub-start-date').value||todayStr(),
+    logo:$('sub-logo-preview').dataset.logo||''
+  };
+
+  if(editingSubId){
+    const idx=S.subs.findIndex(s=>s.id===editingSubId);
+    if(idx>=0) S.subs[idx]=Object.assign(S.subs[idx],data);
+  }else{
+    data.id=uid();
+    data.diagnosis=null;
+    data.diagnosisDate=null;
+    S.subs.push(data);
+  }
+  saveState();
+  hideModal('sub-modal-overlay');
+  toast('保存しました','success');
+  renderHome();
+}
+
+function deleteSubFromModal(){
+  if(!editingSubId) return;
+  const id=editingSubId;
+  $('confirm-modal-text').textContent='このサブスクを削除しますか？この操作は取り消せません。';
+  const okBtn=$('confirm-modal-ok');
+  okBtn.onclick=()=>{
+    S.subs=S.subs.filter(s=>s.id!==id);
+    S.customOrder=(S.customOrder||[]).filter(x=>x!==id);
+    saveState();
+    hideModal('confirm-modal-overlay');
+    hideModal('sub-modal-overlay');
+    toast('削除しました','success');
+    renderHome();
+  };
+  showModal('confirm-modal-overlay');
+}
+
+// ============================================================
+// カレンダータブ
+// ============================================================
+function changeCalMonth(delta){
+  S.calMonth+=delta;
+  if(S.calMonth>12){S.calMonth=1;S.calYear++;}
+  if(S.calMonth<1){S.calMonth=12;S.calYear--;}
+  saveState();
+  renderCalendar();
+}
+
+function subsForCalMonth(year,month){
+  return S.subs.filter(s=>{
+    if(s.cycle==='monthly') return true;
+    return s.billingMonth===month;
+  });
+}
+
+function renderCalendar(){
+  $('cal-month-label').textContent=`${S.calYear}年${S.calMonth}月`;
+  const firstDay=new Date(S.calYear,S.calMonth-1,1).getDay();
+  const lastDate=new Date(S.calYear,S.calMonth,0).getDate();
+  const subsThisMonth=subsForCalMonth(S.calYear,S.calMonth);
+
+  const byDay={};
+  subsThisMonth.forEach(s=>{
+    const d=Math.min(s.billingDay,lastDate);
+    (byDay[d]=byDay[d]||[]).push(s);
+  });
+
+  const today=new Date();
+  const isCurrentMonth=(today.getFullYear()===S.calYear)&&(today.getMonth()+1===S.calMonth);
+
+  const grid=$('cal-grid');
+  grid.innerHTML='';
+  for(let i=0;i<firstDay;i++){
+    const cell=document.createElement('div');
+    grid.appendChild(cell);
+  }
+  for(let d=1;d<=lastDate;d++){
+    const cell=document.createElement('div');
+    const isToday=isCurrentMonth&&today.getDate()===d;
+    cell.style.cssText=`min-height:40px;border-radius:8px;padding:3px;display:flex;flex-direction:column;align-items:center;gap:2px;${isToday?'background:var(--primary-light);':''}`;
+    const dow=new Date(S.calYear,S.calMonth-1,d).getDay();
+    const dayColor= dow===0?'var(--red)':(dow===6?'var(--primary-text)':'var(--text2)');
+    cell.innerHTML=`<span style="font-size:10px;color:${dayColor};font-weight:${isToday?'800':'600'};">${d}</span>`;
+    const subsToday=byDay[d]||[];
+    if(subsToday.length){
+      const iconsWrap=document.createElement('div');
+      iconsWrap.style.cssText='display:flex;flex-wrap:wrap;gap:1px;justify-content:center;';
+      subsToday.slice(0,4).forEach(s=>{
+        const span=document.createElement('span');
+        span.innerHTML=renderAvatarHtml(s,14);
+        span.style.borderRadius='4px';
+        iconsWrap.appendChild(span);
+      });
+      cell.appendChild(iconsWrap);
+    }
+    grid.appendChild(cell);
+  }
+
+  const monthTotal=subsThisMonth.reduce((sum,s)=>sum+s.price,0);
+  $('cal-month-total').textContent=yen(monthTotal);
+
+  const paymentList=$('cal-payment-list');
+  const paymentEmpty=$('cal-payment-empty');
+  const sortedPayments=[...subsThisMonth].sort((a,b)=>a.billingDay-b.billingDay);
+  paymentList.innerHTML='';
+  paymentEmpty.style.display = sortedPayments.length===0 ? 'block' : 'none';
+  sortedPayments.forEach(s=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:6px 0;';
+    row.innerHTML=`
+      <span style="font-size:11px;color:var(--text3);width:38px;flex-shrink:0;">${S.calMonth}/${s.billingDay}</span>
+      ${renderAvatarHtml(s,28)}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(s.name)}</div>
+        ${s.paymentMethod?`<div style="font-size:9px;color:var(--text3);">${escapeHtml(s.paymentMethod)}</div>`:''}
+      </div>
+      <span style="font-size:12px;font-weight:700;font-family:monospace;color:var(--text);">${yen(s.price)}</span>
+    `;
+    paymentList.appendChild(row);
+  });
+  refreshIcons();
+}
+
+// ============================================================
+// 分析タブ
+// ============================================================
+function recordMonthlySnapshot(){
+  const now=new Date();
+  const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const total=S.subs.reduce((sum,s)=>sum+monthlyEquivalent(s),0);
+  S.monthlySnapshots=S.monthlySnapshots||{};
+  S.monthlySnapshots[key]=Math.round(total);
+  saveState();
+}
+
+function estimateMonthlyTotalFor(year,month){
+  // 実績ログがあれば優先、なければ起算日(startDate)から推定
+  const key=`${year}-${String(month).padStart(2,'0')}`;
+  if(S.monthlySnapshots&&S.monthlySnapshots[key]!=null) return S.monthlySnapshots[key];
+  // 対象月の1日（ローカル時刻、タイムゾーンズレを避けるためDate.UTC不使用）
+  const monthStart=new Date(year,month-1,1);
+  let total=0;
+  S.subs.forEach(s=>{
+    if(!s.startDate){total+=monthlyEquivalent(s);return;}
+    // YYYY-MM-DD形式はUTC解釈されるためパースして明示的にローカル日付へ変換
+    const parts=s.startDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const start=parts ? new Date(parseInt(parts[1]),parseInt(parts[2])-1,parseInt(parts[3])) : new Date(s.startDate);
+    if(start<=monthStart) total+=monthlyEquivalent(s);
+  });
+  return Math.round(total);
+}
+
+function renderAnalysis(){
+  recordMonthlySnapshot();
+
+  // ランキング
+  const rankList=$('rank-list');
+  rankList.innerHTML='';
+  const sorted=[...S.subs].sort((a,b)=>monthlyEquivalent(b)-monthlyEquivalent(a)).slice(0,5);
+  const maxVal=sorted.length?monthlyEquivalent(sorted[0]):0;
+  sorted.forEach((s,i)=>{
+    const m=monthlyEquivalent(s);
+    const isTop=i===0&&maxVal>0&&S.subs.length>1;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:11px;';
+    row.innerHTML=`
+      ${renderAvatarHtml(s,36)}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(s.name)}</span>
+          ${isTop?'<span style="font-size:8.5px;font-weight:800;color:var(--red);background:var(--red-light);padding:1px 5px;border-radius:5px;flex-shrink:0;">他に高い</span>':''}
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px;">${yen(s.price)}${s.cycle==='yearly'?'/年':'/月'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${yen(m)}</div>
+        <div style="font-size:9px;color:var(--text3);">月額換算</div>
+      </div>
+    `;
+    rankList.appendChild(row);
+  });
+  if(sorted.length===0) rankList.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px 0;">サブスクが登録されていません</div>';
+
+  // 節約実績（診断で「使ってない」と判定したものの合計）
+  const unusedSubs=S.subs.filter(s=>s.diagnosis==='unused');
+  const savingsMonthly=unusedSubs.reduce((sum,s)=>sum+monthlyEquivalent(s),0);
+  $('ui-savings-monthly').textContent=yen(savingsMonthly);
+  $('ui-savings-yearly').textContent=yen(savingsMonthly*12);
+
+  renderTrendChart();
+  renderCategoryChart();
+}
+
+function renderTrendChart(){
+  const ctx=$('chart-trend');
+  if(!ctx) return;
+  const now=new Date();
+  const labels=[];
+  const data=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    labels.push(`${d.getMonth()+1}月`);
+    data.push(estimateMonthlyTotalFor(d.getFullYear(),d.getMonth()+1));
+  }
+  const cs=getComputedStyle(document.documentElement);
+  const primary=cs.getPropertyValue('--primary').trim()||'#0d9488';
+  const textColor=cs.getPropertyValue('--text2').trim()||'#64748b';
+  const gridColor=cs.getPropertyValue('--border').trim()||'#e2e8f0';
+
+  if(trendChart) trendChart.destroy();
+  trendChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:labels.map((_,i)=>i===labels.length-1?primary:cs.getPropertyValue('--card2').trim()||'#e2e8f0'),borderRadius:6,maxBarThickness:32}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>yen(c.parsed.y)}}},
+      scales:{
+        y:{display:false,grid:{display:false}},
+        x:{grid:{display:false},ticks:{color:textColor,font:{size:10}}}
+      }
+    }
+  });
+}
+
+function renderCategoryChart(){
+  const ctx=$('chart-category');
+  if(!ctx) return;
+  const totals={};
+  S.subs.forEach(s=>{
+    const cat=s.category||'その他';
+    totals[cat]=(totals[cat]||0)+monthlyEquivalent(s);
+  });
+  const entries=Object.entries(totals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const labels=entries.map(e=>e[0]);
+  const data=entries.map(e=>e[1]);
+  const colors=labels.map(getCatColor);
+
+  if(catChart) catChart.destroy();
+  if(entries.length===0){
+    $('cat-legend').innerHTML='<div style="text-align:center;color:var(--text3);font-size:11px;">データがありません</div>';
+    return;
+  }
+  catChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>`${c.label}: ${yen(c.parsed)}`}}}
+    }
+  });
+
+  const total=data.reduce((a,b)=>a+b,0);
+  $('cat-legend').innerHTML=entries.map(([cat,val],i)=>`
+    <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+      <span style="width:9px;height:9px;border-radius:50%;background:${colors[i]};flex-shrink:0;display:inline-block;"></span>
+      <span style="flex:1;color:var(--text2);">${escapeHtml(cat)}</span>
+      <span style="font-weight:700;color:var(--text);font-family:monospace;">${yen(val)}</span>
+      <span style="color:var(--text3);width:36px;text-align:right;">${total>0?Math.round(val/total*100):0}%</span>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// 診断タブ（スワイプ風カード）
+// ============================================================
+function startDiagnosis(){
+  diagQueue=[...S.subs];
+  diagIndex=0;
+  diagResults=[];
+  $('diag-summary').style.display='none';
+  $('diag-stage').style.display='block';
+  if(diagQueue.length===0){
+    $('diag-empty').style.display='block';
+    $('diag-stage').style.display='none';
+    $('diag-progress-text').textContent='0/0';
+    $('diag-progress-bar').style.width='0%';
+    return;
+  }
+  $('diag-empty').style.display='none';
+  renderDiagCard();
+}
+
+function renderDiagCard(){
+  if(diagIndex>=diagQueue.length){
+    showDiagSummary();
+    return;
+  }
+  const sub=diagQueue[diagIndex];
+  $('diag-progress-text').textContent=`${diagIndex+1}/${diagQueue.length}`;
+  $('diag-progress-bar').style.width=`${((diagIndex+1)/diagQueue.length*100).toFixed(0)}%`;
+
+  const stage=$('diag-stage');
+  stage.innerHTML=`
+    <div class="card swipe-card" id="diag-card" style="padding:26px 20px;text-align:center;">
+      <div style="display:flex;justify-content:center;margin-bottom:14px;">${renderAvatarHtml(sub,64)}</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text);">${escapeHtml(sub.name)}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${yen(sub.price)}${sub.cycle==='yearly'?'/年':'/月'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:18px;">先月どのくらい使った？</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;">
+      <button onclick="diagAnswer('unused')" class="card" style="padding:14px 6px;text-align:center;cursor:pointer;border:none;">
+        <div style="font-size:22px;">😕</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--red);margin-top:4px;">使ってない</div>
+        <div style="font-size:8.5px;color:var(--text3);">解約を検討</div>
+      </button>
+      <button onclick="diagAnswer('sokoso')" class="card" style="padding:14px 6px;text-align:center;cursor:pointer;border:none;">
+        <div style="font-size:22px;">😐</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--amber);margin-top:4px;">まあまあ</div>
+        <div style="font-size:8.5px;color:var(--text3);">様子を見る</div>
+      </button>
+      <button onclick="diagAnswer('used')" class="card" style="padding:14px 6px;text-align:center;cursor:pointer;border:none;">
+        <div style="font-size:22px;">😊</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--green);margin-top:4px;">よく使った</div>
+        <div style="font-size:8.5px;color:var(--text3);">継続する</div>
+      </button>
+    </div>
+  `;
+}
+
+function diagAnswer(result){
+  const sub=diagQueue[diagIndex];
+  const idx=S.subs.findIndex(s=>s.id===sub.id);
+  if(idx>=0){
+    S.subs[idx].diagnosis=result;
+    S.subs[idx].diagnosisDate=todayStr();
+  }
+  diagResults.push({sub,result});
+  saveState();
+  diagIndex++;
+  renderDiagCard();
+}
+
+function showDiagSummary(){
+  $('diag-stage').style.display='none';
+  const unused=diagResults.filter(r=>r.result==='unused');
+  const sokoso=diagResults.filter(r=>r.result==='sokoso');
+  const used=diagResults.filter(r=>r.result==='used');
+  const savings=unused.reduce((sum,r)=>sum+monthlyEquivalent(r.sub),0);
+
+  const summary=$('diag-summary');
+  summary.style.display='block';
+  summary.innerHTML=`
+    <div class="card p-4" style="text-align:center;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">診断完了！</div>
+      <div style="display:flex;justify-content:space-around;margin-bottom:18px;">
+        <div><div style="font-size:18px;font-weight:800;color:var(--red);">${unused.length}</div><div style="font-size:9.5px;color:var(--text3);">使ってない</div></div>
+        <div><div style="font-size:18px;font-weight:800;color:var(--amber);">${sokoso.length}</div><div style="font-size:9.5px;color:var(--text3);">まあまあ</div></div>
+        <div><div style="font-size:18px;font-weight:800;color:var(--green);">${used.length}</div><div style="font-size:9.5px;color:var(--text3);">よく使った</div></div>
+      </div>
+      ${unused.length>0?`
+      <div style="background:var(--primary-light);border-radius:12px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--primary-text);font-weight:700;">「使ってない」を解約すると</div>
+        <div style="font-size:20px;font-weight:800;color:var(--primary-text);font-family:monospace;margin-top:4px;">月${yen(savings)}の節約</div>
+      </div>`:''}
+      <button onclick="switchTab('analysis')" class="btn btn-primary" style="width:100%;justify-content:center;">分析タブで詳しく見る</button>
+      <button onclick="startDiagnosis()" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;">もう一度診断する</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// 設定タブ
+// ============================================================
+function renderSettings(){
+  const list=$('settings-cat-list');
+  list.innerHTML=SUB_CATS.map(c=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:99px;background:var(--card2);font-size:11px;font-weight:600;color:var(--text2);">
+      <span style="width:8px;height:8px;border-radius:50%;background:${getCatColor(c)};display:inline-block;"></span>${escapeHtml(c)}
+    </span>
+  `).join('');
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`subscan_backup_${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('エクスポートしました','success');
+}
+
+function importData(e){
+  const file=e.target.files&&e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      if(!parsed||!Array.isArray(parsed.subs)) throw new Error('invalid');
+      S=Object.assign(JSON.parse(JSON.stringify(INIT)),parsed);
+      saveState();
+      applyTheme();
+      renderHome();
+      toast('インポートしました','success');
+    }catch(err){
+      toast('ファイルの形式が正しくありません','error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function confirmResetAll(){
+  $('confirm-modal-text').textContent='すべてのサブスクとデータを削除します。この操作は取り消せません。';
+  const okBtn=$('confirm-modal-ok');
+  okBtn.onclick=()=>{
+    S=JSON.parse(JSON.stringify(INIT));
+    saveState();
+    hideModal('confirm-modal-overlay');
+    applyTheme();
+    renderHome();
+    toast('すべてのデータを削除しました','success');
+  };
+  showModal('confirm-modal-overlay');
+}
+
+// ============================================================
+// Google Drive連携（Finbooと同じOAuthクライアントを利用）
+// ============================================================
+const GDRIVE_CLIENT_ID='1091807447825-9d01hq12u7t9s579fkh7o5pfacq42uv2.apps.googleusercontent.com';
+const GDRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
+const GDRIVE_FILE_NAME='submiru_data.json';
+
+let gdriveToken=null;
+let gdriveFileId=null;
+let gdriveUserName='';
+
+async function gdriveInit(){
+  const saved=localStorage.getItem('submiru_gdrive_token');
+  const savedId=localStorage.getItem('submiru_gdrive_fileid');
+  const savedName=localStorage.getItem('submiru_gdrive_username');
+  if(saved){
+    gdriveToken=saved; gdriveFileId=savedId||null; gdriveUserName=savedName||'';
+    updateGdriveUI(true);
+    try{
+      await gdriveDownload();
+    }catch(e){
+      console.warn('Drive自動同期失敗:',e.message);
+      if(e.message&&(e.message.includes('401')||e.message.includes('403'))){
+        updateGdriveUI(false);
+        toast('Drive連携の有効期限が切れました。再度ログインしてください。','error');
+      }
+    }
+  }
+}
+
+function updateGdriveUI(loggedIn){
+  const loginBtn=$('btn-gdrive-login');
+  const statusDiv=$('gdrive-status');
+  const nameEl=$('gdrive-user-name');
+  if(loggedIn){
+    if(loginBtn) loginBtn.style.display='none';
+    if(statusDiv) statusDiv.style.display='flex';
+    if(nameEl) nameEl.textContent=gdriveUserName||'連携中';
+  }else{
+    if(loginBtn) loginBtn.style.display='flex';
+    if(statusDiv) statusDiv.style.display='none';
+    gdriveToken=null; gdriveFileId=null;
+    localStorage.removeItem('submiru_gdrive_token');
+    localStorage.removeItem('submiru_gdrive_fileid');
+    localStorage.removeItem('submiru_gdrive_username');
+  }
+}
+
+function gdriveLogin(){
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id:GDRIVE_CLIENT_ID,
+    scope:GDRIVE_SCOPE,
+    callback:async(resp)=>{
+      if(resp.error){ toast('Google認証エラー: '+resp.error,'error'); return; }
+      gdriveToken=resp.access_token;
+      localStorage.setItem('submiru_gdrive_token',gdriveToken);
+      try{
+        const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+gdriveToken}});
+        const u=await r.json();
+        gdriveUserName=u.name||u.email||'Googleユーザー';
+        localStorage.setItem('submiru_gdrive_username',gdriveUserName);
+      }catch(e){}
+      updateGdriveUI(true);
+      toast('Google Driveに接続しました！','success');
+      await gdriveDownload();
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function gdriveFindFile(){
+  const r=await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${GDRIVE_FILE_NAME}'+and+trashed=false&spaces=appDataFolder,drive&fields=files(id,name,modifiedTime)`,
+    {headers:{'Authorization':'Bearer '+gdriveToken}}
+  );
+  const d=await r.json();
+  if(d.files&&d.files.length>0){
+    gdriveFileId=d.files[0].id;
+    localStorage.setItem('submiru_gdrive_fileid',gdriveFileId);
+    return d.files[0];
+  }
+  return null;
+}
+
+async function gdriveDownload(){
+  if(!gdriveToken){ toast('先にDrive連携してください','error'); return; }
+  try{
+    const file=await gdriveFindFile();
+    if(!file){
+      toast('Drive上にデータがありません。まずアップロードしてください。','info');
+      return;
+    }
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files/${gdriveFileId}?alt=media`,{headers:{'Authorization':'Bearer '+gdriveToken}});
+    const cloudData=await r.json();
+    if(cloudData&&cloudData.data){
+      S=Object.assign(JSON.parse(JSON.stringify(INIT)),cloudData.data);
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(S));
+    }
+    applyTheme();
+    renderHome();
+    toast('Driveからデータを読み込みました！','success');
+  }catch(e){
+    toast('Drive読み込みエラー: '+e.message,'error');
+    throw e;
+  }
+}
+
+async function gdriveUpload(){
+  if(!gdriveToken){ toast('先にDrive連携してください','error'); return; }
+  try{
+    const payload=JSON.stringify({data:S,updatedAt:new Date().toISOString()});
+    const file=await gdriveFindFile();
+    let url,method;
+    if(file){
+      url=`https://www.googleapis.com/upload/drive/v3/files/${gdriveFileId}?uploadType=media`;
+      method='PATCH';
+      await fetch(url,{method,headers:{'Authorization':'Bearer '+gdriveToken,'Content-Type':'application/json'},body:payload});
+    }else{
+      url='https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      method='POST';
+      const meta=JSON.stringify({name:GDRIVE_FILE_NAME,mimeType:'application/json'});
+      const boundary='-------submiru_boundary';
+      const body=`--${boundary}\r\nContent-Type: application/json\r\n\r\n${meta}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${payload}\r\n--${boundary}--`;
+      const r=await fetch(url,{method,headers:{'Authorization':'Bearer '+gdriveToken,'Content-Type':`multipart/related; boundary=${boundary}`},body});
+      const d=await r.json();
+      if(d.id){ gdriveFileId=d.id; localStorage.setItem('submiru_gdrive_fileid',gdriveFileId); }
+    }
+    toast('Driveにデータを保存しました！','success');
+  }catch(e){
+    toast('Driveアップロードエラー: '+e.message,'error');
+  }
+}
+
+async function gdriveSync(){
+  await gdriveUpload();
+  await gdriveDownload();
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+function init(){
+  const now=new Date();
+  if(!localStorage.getItem(STORAGE_KEY)){
+    S.calYear=now.getFullYear();
+    S.calMonth=now.getMonth()+1;
+  }
+  $('btn-theme-toggle').addEventListener('click',toggleTheme);
+  $('btn-gdrive-login').addEventListener('click',gdriveLogin);
+  $('btn-gdrive-sync').addEventListener('click',gdriveSync);
+  $('btn-gdrive-logout').addEventListener('click',()=>{updateGdriveUI(false);toast('Drive連携を切断しました');});
+  applyTheme();
+  gdriveInit();
+  renderHome();
+  refreshIcons();
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
